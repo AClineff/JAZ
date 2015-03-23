@@ -1,0 +1,19 @@
+{
+  "name": "JAZ",
+  "version": "1.0.0",
+  "description": "JAZMud Home",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AClineff/JAZ"
+  },
+  "author": "Allen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AClineff/JAZ/issues"
+  },
+  "homepage": "https://github.com/AClineff/JAZ"
+}
