@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/AClineff/JAZ/issues"
   },
-  "homepage": "https://github.com/AClineff/JAZ"
+  "homepage": "https://github.com/AClineff/JAZ",
+  "dependencies": {
+    "express": "^4.12.3"
+  }
 }
