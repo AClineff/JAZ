@@ -15,5 +15,14 @@ socket.on('chat message', function (msg) {
 });
 
 var appendMsg = function(msg){
-    $('#messages').append($('<li>').text(msg));
+    console.log(msg);
+
+    if(msg.constructor === Array){
+        for(var i = 0; i < msg.length; i++){
+            $('#messages').append($('<li>').text(msg[i]));
+        }
+    }
+    else {
+        $('#messages').append($('<li>').text(msg));
+    }
 };
