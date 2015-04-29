@@ -1,6 +1,4 @@
-/**
- * Created by Allen on 3/24/2015.
- */
+
 var socket = io();
 
 $('form').submit(function () {
@@ -18,9 +16,11 @@ var appendMsg = function(msg){
     console.log(msg);
 
     if(msg.constructor === Array){
+        var msgtext = '';
         for(var i = 0; i < msg.length; i++){
-            $('#messages').append($('<li>').text(msg[i]));
+            msgtext += msg[i] + '<br/>';
         }
+        $('#messages').append($('<li>').html(msgtext));
     }
     else {
         $('#messages').append($('<li>').text(msg));

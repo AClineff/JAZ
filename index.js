@@ -3,6 +3,8 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var world = require('./lib/world');
+var Parser = require('./lib/parser/parser');
+var Out = require('./lib/output/output');
 
 // UID counter for users TODO remove this shit.
 var i = 0;
@@ -21,31 +23,43 @@ app.use(express.static('public'));
 // Bootstrap the world!
 world.initialize();
 
-console.log(world.getRoom(1));
-
 // See Socket.IO API for more details.
 // This is called when a new client initializes a connection with the server.
 // All the methods dealing with THAT unique connection (socket) are initialized
 // here as well.
 io.on('connection', function (socket) {
+
+    // Generate a unique user id
     var username = 'User' + i;
     i++;
 
+    // Create a user object TODO Make one of these.
     var user = {};
+
+    // Populate User fields TODO read from database
     user.name = username;
     user.socketId = socket.id;
-    user.room = world.getRoom(0);
-    world.getRoom(0).addUserToRoom(user);
+    user.room = world.getRoom(1);
 
-    io.emit('chat message', 'User ' + username + ' Connected!');
+    // Add the user to the world. Plop!
+    world.getRoom(1).addUserToRoom(user);
 
+
+    Out.broadcastMessage(['User ' + user.name + ' Connected!'], io);
+    Out.sendMessageToUser([user.room.description, user.room.getExitsString()], user, io);
+
+    // When receiving socket.io 'chat message' from this user
+    // Do whatever.
     socket.on('chat message', function (msg) {
-      //  io.emit('chat message', msg.message );
-        io.to(user.socketId).emit('chat message', makeMessage(msg, user));
+        Parser.parseMessage(msg.message, {
+            user : user,
+            world : world,
+            io : io
+        });
     });
 
     socket.on('disconnect', function () {
-        io.emit('chat message', 'User ' + user.name + ' Disconnected!');
+        Out.broadcastMessage('User ' + user.name + ' Disconnected', io);
         i--;
     });
 
@@ -55,43 +69,3 @@ io.on('connection', function (socket) {
 http.listen(3000, function () {
     console.log('listening on *:3000');
 });
-
-var makeMessage = function (msg, user) {
-    // User changing username
-    if (msg.message.indexOf('/me') == 0) {
-        var newName = msg.message.slice(4);
-        var oldName = user.name;
-        user.name = newName;
-        return 'User ' + oldName + ' is now known as ' + user.name;
-    }
-
-    // User looking!
-    if(msg.message.indexOf('look') > -1){
-        var room = user.room;
-        var rs = [];
-        rs.push(room.description);
-
-        //var s = "Exits are : ";
-        //for(var i = 0; i < room.exits.length; i++){
-        //    s += room.exits[i] + ', ';
-        //}
-        //rs.push(s);
-
-        return rs;
-    }
-
-    if(msg.message.indexOf('n') > -1){
-        if(user.room.exits['n'] !== 'undefined'){
-            //There's an exit!
-            var newRoom = world.getRoom(user.room.exits['north']);
-            var oldRoom = user.room;
-
-            newRoom.addUserToRoom(user);
-            oldRoom.removeUserFromRoom(user);
-            user.room = newRoom;
-            return [user.room.description];
-        }
-    }
-
-    return user.name + " : " + msg.message;
-}
