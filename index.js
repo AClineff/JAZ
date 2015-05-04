@@ -5,6 +5,7 @@ var io = require('socket.io')(http);
 var world = require('./lib/world');
 var Parser = require('./lib/parser/parser');
 var Out = require('./lib/output/output');
+var User = require('./lib/agent/user/user');
 
 // UID counter for users TODO remove this shit.
 var i = 0;
@@ -33,20 +34,23 @@ io.on('connection', function (socket) {
     var username = 'User' + i;
     i++;
 
-    // Create a user object TODO Make one of these.
-    var user = {};
+    var user = new User({
+        name : username,
+        socketId : socket.id,
+        room : world.getRoom(1)
+    });
 
-    // Populate User fields TODO read from database
-    user.name = username;
-    user.socketId = socket.id;
-    user.room = world.getRoom(1);
+    user.logon();
 
     // Add the user to the world. Plop!
     world.getRoom(1).addUserToRoom(user);
 
-
     Out.broadcastMessage(['User ' + user.name + ' Connected!'], io);
     Out.sendMessageToUser([user.room.description, user.room.getExitsString()], user, io);
+
+    socket.on('user logon', function(msg){
+        var logoninfo = msg.message;
+    });
 
     // When receiving socket.io 'chat message' from this user
     // Do whatever.
@@ -60,6 +64,7 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         Out.broadcastMessage('User ' + user.name + ' Disconnected', io);
+        user.logoff();
         i--;
     });
 
